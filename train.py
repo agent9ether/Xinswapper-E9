@@ -160,7 +160,6 @@ def main(args):
             latent_fake = process_latent(recognition_model, fake_denorm)
 
             norm_target =  v2.functional.normalize(target, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=False)
-            norm_source =  v2.functional.normalize(source, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=False)
 
             # adversarial loss
             adversarial_loss = torch.sum(torch.nn.ReLU()(1.0 - logits).mean() * different_id) / (different_id.sum() + 1e-4)
@@ -184,16 +183,16 @@ def main(args):
 
             # style loss
             style_loss = 0.0
-            swapped_features = vgg19(img_fake)
+            swapped_features = vgg19(fake_denorm)
             with torch.no_grad():
-                target_features = vgg19(norm_target)
+                target_features = vgg19(target)
             for layer in style_layers:
                 gram_target = gram_matrix(target_features[layer])
                 gram_swapped = gram_matrix(swapped_features[layer])
                 style_loss += style_criterion(gram_swapped, gram_target)
 
             # feature loss
-            real_features = net_d.get_feature(norm_target)
+            real_features = net_d.get_feature(target)
             feature_loss = feat_criterion(fake_features["3"], real_features["3"])  # 0.0
 
             g_loss = args.weights_adv*adversarial_loss + args.weights_rec*reconstruction_loss + args.weights_id*id_loss + args.weights_style*style_loss + args.weights_feat*feature_loss + args.weights_eyes*eyes_loss
@@ -207,11 +206,11 @@ def main(args):
 
             optimizer_d.zero_grad()
 
-            d_out_real, _ = net_d(norm_source, None)
-            score_real = torch.sum(torch.nn.ReLU()(1.0 - d_out_real).mean() * flags) / (flags.sum() + 1e-4)
+            d_out_real, _ = net_d(source, None)
+            score_real = torch.sum(torch.nn.ReLU()(1.0 - d_out_real).mean() * different_id) / (different_id.sum() + 1e-4)
 
             d_out_fake, _ = net_d(img_fake.detach(), None)
-            score_fake = torch.sum(torch.nn.ReLU()(1.0 + d_out_fake).mean() * flags) / (flags.sum() + 1e-4)
+            score_fake = torch.sum(torch.nn.ReLU()(1.0 + d_out_fake).mean() * different_id) / (different_id.sum() + 1e-4)
 
             d_loss = 0.5 * (score_real.mean() + score_fake.mean())
 
