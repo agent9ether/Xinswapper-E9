@@ -8,16 +8,6 @@ After finetuning/training, you may use the included conversion script to convert
 >##### __Note/Disclaimer: Xinswapper is my own personal implementation of the same architecture used in inswapper_128 in an attempt to finetune the original model from insightface. I am not affiliated with insightface and this is not the original training code for inswapper_128 and still has much room for improvement. This is intended for responsible and ethical use only.__ 
 
 ---
-## Comparison
-
-Below is an example of the difference between my code and the original from a test run finetuning the original using only a small number of different identities in the dataset and <1000 steps
-<p align="center">
-<img src="./asset/1.jpg" width=100%>
-<img src="./asset/2.jpg" width=100%>
-</p>
-
-
----
 ## Training
 ### 1. prepare environment
 Download required models/weights from [here](https://github.com/xaxsr/Xinswapper/releases/tag/weights) and put them into `./weights/`:
@@ -78,8 +68,8 @@ python convert_to_pytorch.py --onnx_file './weights/inswapper_128.onnx' --output
 ```
 
 ### 3. training
-1. use `train.py` to start training
-    ```bash
+use `train.py` to start training
+```bash
     python train.py \
         --pretrained True\
         --name 'my_run' \

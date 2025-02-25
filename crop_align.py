@@ -6,8 +6,10 @@ import numpy as np
 
 from tqdm import tqdm
 from pathlib import Path
+from torchvision.transforms import v2
+from skimage import transform as trans
 
-from util.cropping import detect_retinaface, norm_crop
+from util.cropping import detect_retinaface, arcface_src
 
 def crop_align(retinaface_model, input_dir, output_dir, extension, quality, crop_size):
     image_files = [os.path.join(input_dir, os.path.basename(f)) for f in Path(input_dir).glob('*') if f.suffix.lower() in ['.jpg', '.jpeg', '.png']]
@@ -46,7 +48,15 @@ def crop_align(retinaface_model, input_dir, output_dir, extension, quality, crop
                 pass
             else:
                 for j, kps in enumerate(kpss):
-                    img_np = norm_crop(img.cpu().numpy().transpose(1, 2, 0), kps, crop_size)
+                    dst = arcface_src.copy() * (crop_size / 128.0)
+                    dst[:,0] += (crop_size / 16.0)
+
+                    tform = trans.SimilarityTransform()
+                    tform.estimate(kps, dst) 
+                    
+                    face = v2.functional.affine(img, tform.rotation*57.2958, (tform.translation[0], tform.translation[1]) , tform.scale, 0, center = (0,0), interpolation=v2.InterpolationMode.BILINEAR )
+                    img_np = v2.functional.crop(face, 0,0, crop_size, crop_size).permute(1,2,0).cpu().numpy()
+                    
                     output_path = os.path.join(output_dir, f'{base_name}_{j:05d}_.{extension}')
                     if extension == 'jpg':
                         cv2.imwrite(output_path, img_np.astype(np.uint8), [int(cv2.IMWRITE_JPEG_QUALITY), quality])
