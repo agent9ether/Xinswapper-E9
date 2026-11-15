@@ -64,7 +64,7 @@ def main(args):
 
     if os.path.isfile(args.recognition_model_path):
         print(f">load recognition model '{args.recognition_model_path}'")
-        recognition_model = torch.load(args.recognition_model_path).to(device)
+        recognition_model = torch.load(args.recognition_model_path, weights_only=False).to(device)  # our own onnx2torch export of w600k_r50 (trusted, made locally)
         recognition_model.eval()
         print(">recognition model successfully loaded")
     else:

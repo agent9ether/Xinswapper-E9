@@ -6,3 +6,7 @@ venv/
 .idea/
 .vscode/
 weights/*
+
+# E9 research workspace
+.venv/
+weights/

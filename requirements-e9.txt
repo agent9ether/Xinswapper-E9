@@ -1,0 +1,11 @@
+# E9 research workspace (Python 3.12, CUDA 12.8). The repo's own requirements.txt pins torch 2.1/py3.10;
+# these are current equivalents. Install torch from the cu128 index first.
+opencv-python
+numpy<2.3
+onnx
+onnxruntime-gpu
+onnx2torch
+tqdm
+scikit-image
+tensorboard
+timm
