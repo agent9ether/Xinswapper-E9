@@ -3,7 +3,7 @@ import torch
 from network.generator import xinswapper_generator_onnx_ready
 
 def process_conversion(checkpoint_file, output_file):
-    device = 'cuda'
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net_g = xinswapper_generator_onnx_ready(num_style_blocks=6)
     net_g.to(device)
 
@@ -26,6 +26,7 @@ def process_conversion(checkpoint_file, output_file):
         do_constant_folding=False,
         input_names=['target', 'source'],
         output_names=['output'],
+        dynamo=False,  # torch >= 2.9 defaults to the dynamo exporter (needs onnxscript); keep the TorchScript one
     )
 
     print(">onnx model created... adding mapping network weights")

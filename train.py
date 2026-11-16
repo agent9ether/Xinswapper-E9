@@ -154,9 +154,11 @@ def main(args):
             with torch.no_grad():
                 img_fake_ins = net_ins(target, latent)
 
-            logits, fake_features = net_d(img_fake, None)
-
+            # E9 fix: the generator outputs [-1, 1] but the discriminator's real images (source) and the
+            # feature-loss target are [0, 1]. Feeding it the raw [-1, 1] fake taught G to squeeze its output
+            # into [0, 1], which reads back as washed-out, low-contrast faces. Give D the fake in [0, 1] too.
             fake_denorm = (img_fake + 1) / 2
+            logits, fake_features = net_d(fake_denorm, None)
             latent_fake = process_latent(recognition_model, fake_denorm)
 
             norm_target =  v2.functional.normalize(target, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=False)
@@ -209,7 +211,7 @@ def main(args):
             d_out_real, _ = net_d(source, None)
             score_real = torch.sum(torch.nn.ReLU()(1.0 - d_out_real).mean() * different_id) / (different_id.sum() + 1e-4)
 
-            d_out_fake, _ = net_d(img_fake.detach(), None)
+            d_out_fake, _ = net_d(fake_denorm.detach(), None)
             score_fake = torch.sum(torch.nn.ReLU()(1.0 + d_out_fake).mean() * different_id) / (different_id.sum() + 1e-4)
 
             d_loss = 0.5 * (score_real.mean() + score_fake.mean())

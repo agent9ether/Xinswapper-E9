@@ -28,7 +28,8 @@ class FaceDataset(Dataset):
            # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
-        file_list = glob.glob(os.path.join(data_root, "*", "*.*"))
+        # E9: several dataset roots can be combined, separated by ";" (each root holds <person>/<image> folders)
+        file_list = [f for root in str(data_root).split(";") if root for f in sorted(glob.glob(os.path.join(root, "*", "*.*")))]
         self.file_list = file_list
 
         self.file_list_by_dir = {}
