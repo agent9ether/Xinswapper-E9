@@ -115,7 +115,7 @@ def main(args):
         del checkpoint
 
     dataset = FaceDataset(args.data_root, args.image_size, same_prob=args.same_prob, same_id=args.same_id, regularization_path=args.data_reg_root)
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=8, drop_last=True)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=int(os.environ.get("XS_WORKERS", "8")), persistent_workers=True, drop_last=True)
 
     id_criterion = torch.nn.L1Loss()
     style_criterion = torch.nn.L1Loss()
