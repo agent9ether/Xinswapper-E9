@@ -295,6 +295,13 @@ def main(args):
 
                 if os.path.exists(net_g_path + '.bak'):
                     os.remove(net_g_path + '.bak')
+                # E9: keep a generator-only snapshot of every checkpoint (XS_SNAPSHOTS=1) so the best step can be
+                # picked afterwards instead of only the last one surviving
+                if os.environ.get("XS_SNAPSHOTS") == "1":
+                    snap_dir = os.path.join(output_dir, "steps")
+                    os.makedirs(snap_dir, exist_ok=True)
+                    torch.save({'model_state_dict': net_g.state_dict()},
+                               os.path.join(snap_dir, f"{args.name}_netG_s{step:06d}.pth"))
                 if os.path.exists(net_d_path + '.bak'):
                     os.remove(net_d_path + '.bak')
 
